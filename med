@@ -27,7 +27,7 @@ if __name__ == '__main__':
     
     with open('proxies1.txt', 'r') as f:
         for line in f.readlines():
-            print(line.strip()) # 把末尾的'\n'删掉
+            #print(line.strip()) # 把末尾的'\n'删掉
             proxy_list.append(line.strip())
 
     proxy_cnt=0
@@ -74,9 +74,10 @@ if __name__ == '__main__':
         print('start_url' + url)
         
         try:
-            req=requests.get(url,headers=headers, timeout=10，proxies=proxies).text
+            req=requests.get(url,headers=headers, timeout=10,proxies=proxies).text
         except:
             while(1):
+                print("now proxy:"+proxy_list[proxy_cnt])
                 print("change proxy")
                 proxy_cnt+=1
                 if(proxy_cnt>=len(proxy_list)):
@@ -87,11 +88,12 @@ if __name__ == '__main__':
                     }
                 try:
 #                     req=requests.get(url,headers=headers, timeout=10，proxies=proxies).text
-                    req=requests.get(url,headers=headers, timeout=10，proxies=proxies).text
+                    req=requests.get(url,headers=headers, timeout=10,proxies=proxies).text
+                    print("change success")
                     break
                 except:
                     continue
-        soup=BeautifulSoup(req.content,'lxml')
+        soup=BeautifulSoup(req,'lxml')
         print(soup)
             
 
