@@ -5,7 +5,7 @@
 import requests
 import re
 from bs4 import BeautifulSoup
-
+import time
 
 
 #此处修改头字段,自己用f12查看谷歌浏览器下自己的浏览器头信息，可以让根据目标站点而写的head会更好
@@ -19,16 +19,49 @@ headers = {
 }
 
 
+proxy_list=[]
+res_list=[]
+name_list=[]
+def get_proxies():
+        '''
+        从西刺首页获取 http 和 https 代理地址并存入实例变量 proxy_list。
+        '''
+        # 记录开始时间
+        proxy_list.clear()
+        
+        start = time.time()
+        print('start crawling ip...')
+        try:
+            # 发送http请求，加一个 User-Agent 的请求头让服务器觉得我们不像爬虫脚本，
+            # 不加 headers 也可以。
+            html = requests.get('http://www.xicidaili.com/', headers={
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.79 Safari/537.36'
+            })
+        except:
+            # 若请求失败则抛出异常，中断程序，因为获取不到网页内容，继续下去也没意义了。
+            raise
+        # 以下的解析部分的注释省去，各位看一下 BeautifulSoup 的文档就知道了，不是本文的重点。
+        soup = BeautifulSoup(html.text, 'lxml')
+        trs = soup.find('table', id='ip_list').find_all('tr', class_=['', 'odd'])[2:]
+        for tr in trs:
+            scheme = tr.findAll('td', class_="")[-3].get_text().lower()
+            if scheme in ['http', 'https']:
+                ip = tr.findAll('td', class_="")[0].get_text()
+                port = tr.findAll('td', class_="")[1].get_text()
+                proxy = scheme + '://' + ip + ':' + port
+                #self.proxy_list.append(proxy)
+                proxy_list.append(proxy)
+        # 打印运行时间
+        print('[Get Proxies]total time: %.2f' % (time.time() - start))
+
+
+
 
 
 if __name__ == '__main__':
     print("start spider")
-    proxy_list=[]
+    get_proxies()
     
-    with open('proxies1.txt', 'r') as f:
-        for line in f.readlines():
-            #print(line.strip()) # 把末尾的'\n'删掉
-            proxy_list.append(line.strip())
 
     proxy_cnt=0
             
@@ -71,16 +104,17 @@ if __name__ == '__main__':
         }
     for foo in med_list:
         url = url_raw + foo
-        print('start_url' + url)
+        print('start_url:' + url)
         
         try:
-            req=requests.get(url,headers=headers, timeout=10,proxies=proxies).text
+            req=requests.get(url,headers=headers,timeout=3,proxies=proxies).text
         except:
             while(1):
                 print("now proxy:"+proxy_list[proxy_cnt])
                 print("change proxy")
                 proxy_cnt+=1
-                if(proxy_cnt>=len(proxy_list)):
+                if(proxy_cnt>=len(proxy_list)-1):
+                    get_proxies()
                     proxy_cnt=0
                 proxies = {
                       "http": proxy_list[proxy_cnt],
@@ -88,13 +122,25 @@ if __name__ == '__main__':
                     }
                 try:
 #                     req=requests.get(url,headers=headers, timeout=10，proxies=proxies).text
-                    req=requests.get(url,headers=headers, timeout=10,proxies=proxies).text
+                    req=requests.get(url,headers=headers,timeout=3,proxies=proxies).text
                     print("change success")
                     break
                 except:
                     continue
+        
         soup=BeautifulSoup(req,'lxml')
-        print(soup)
+        try:
+            res=soup.find(class_="image").img["src"]
+        except:
+            res='none'
+        res_list.append(res)
+        name_list.append(foo)
+        print(res)
+        with open('pic_url.txt', 'w') as f:
+            f.write(foo + '\n')
+            f.write(res + '\n')
+
+
             
 
 #     url = "https://www.urlteam.org"
