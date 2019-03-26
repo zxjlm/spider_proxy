@@ -1,10 +1,40 @@
+
+
+
+#coding:utf-8
+import requests
 import re
 from bs4 import BeautifulSoup
-import requests
 
-url_raw = 'http://www.a-hospital.com/w/'
 
-med_list = ['玉米须', '石楠叶', '藿香', '佩兰', '苍术', '厚朴', '砂仁', '豆蔻', '草豆蔻', '草果', '茯苓', '薏苡仁', '猪苓', '地肤子', '冬瓜皮', '千年健', '葫芦',
+
+#此处修改头字段,自己用f12查看谷歌浏览器下自己的浏览器头信息，可以让根据目标站点而写的head会更好
+headers = {
+    'Host':"map.baidu.com",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Encoding": "gzip, deflate",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Connection": "keep-alive",
+    "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:39.0) Gecko/20100101 Firefox/39.0"
+}
+
+
+
+
+if __name__ == '__main__':
+    print("start spider")
+    proxy_list=[]
+    
+    with open('proxies1.txt', 'r') as f:
+        for line in f.readlines():
+            print(line.strip()) # 把末尾的'\n'删掉
+            proxy_list.append(line.strip())
+
+    proxy_cnt=0
+            
+    url_raw = 'http://www.a-hospital.com/w/'
+
+    med_list = ['玉米须', '石楠叶', '藿香', '佩兰', '苍术', '厚朴', '砂仁', '豆蔻', '草豆蔻', '草果', '茯苓', '薏苡仁', '猪苓', '地肤子', '冬瓜皮', '千年健', '葫芦',
             '香加皮', '枳椇子', '泽漆', '蝼蛄', '荠菜', '车前子', '滑石', '关木通', '通草', '瞿麦', '南瓜子', '泽泻', '防己', '蕲蛇', '乌梢蛇', '木瓜', '蚕沙',
             '伸筋草', '寻骨风', '松节', '海风藤', '青风藤', '丁公藤', '昆明山海棠', '雪上一枝蒿', '鹿衔草', '秦艽', '雪莲花', '桑枝', '豨莶草', '臭梧桐', '海桐皮',
             '络石藤', '雷公藤', '老鹳草', '穿山龙', '丝瓜络', '五加皮', '桑寄生', '狗脊', '海金沙', '路路通', '柿蒂', '青木香', '荔枝核', '香附', '佛手', '香橼',
@@ -35,24 +65,39 @@ med_list = ['玉米须', '石楠叶', '藿香', '佩兰', '苍术', '厚朴', '�
             '浙贝母', '瓜蒌', '马兜铃', '竹沥', '斑蝥', '前胡', '桔梗', '胖大海', '海藻', '昆布', '黄药子', '海蛤壳', '海浮石', '瓦楞子', '礞石', '苦杏仁',
             '紫苏子', '百部', '竹茹']
 
-for foo in med_list:
-    url = url_raw + foo
-    print('start_url' + url)
-    req=requests.get(url)
-    soup=BeautifulSoup(req.content,'lxml')
-    print(soup)
+    proxies = {
+          "http": proxy_list[proxy_cnt],
+          "https": proxy_list[proxy_cnt+1],
+        }
+    for foo in med_list:
+        url = url_raw + foo
+        print('start_url' + url)
+        
+        try:
+            req=requests.get(url,headers=headers, timeout=10，proxies=proxies).text
+        except:
+            while(1):
+                print("change proxy")
+                proxy_cnt+=1
+                if(proxy_cnt>=len(proxy_list)):
+                    proxy_cnt=0
+                proxies = {
+                      "http": proxy_list[proxy_cnt],
+                      "https": proxy_list[proxy_cnt+1],
+                    }
+                try:
+#                     req=requests.get(url,headers=headers, timeout=10，proxies=proxies).text
+                    req=requests.get(url,headers=headers, timeout=10，proxies=proxies).text
+                    break
+                except:
+                    continue
+        soup=BeautifulSoup(req.content,'lxml')
+        print(soup)
+            
 
+#     url = "https://www.urlteam.org"
 
-
-
-import re
-from bs4 import BeautifulSoup
-import requests
-
-url_raw = 'http://www.a-hospital.com/w/'
-url = url_raw+"玉米须"
-req = requests.get(url)
-soup1=BeautifulSoup(req.content,'lxml')
-
-img_url=soup1.find(class_="image")
-print(img_url.img["src"])
+# 	html=requests.get(url,headers=headers, timeout=10，proxies=proxies).text
+    
+# 	url = "https://www.urlteam.org"
+# 	get_request(url,headers)
