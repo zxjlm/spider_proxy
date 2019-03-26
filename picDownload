@@ -1,0 +1,22 @@
+def Download(url,name):
+    print("start to Down "+name)
+    print("url=",url)
+    headers={"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36"}
+    r = requests.get(url,headers=headers) 
+    name=name.replace('/'," ")
+    
+    path=r"C:\Users\Harumonia\spider_test\med_pic"+r"/"+name+".jpg"
+    print("to",path)
+    with open(path, "wb") as code:
+        code.write(r.content)    
+    print(name+" over")
+    
+    localtime = time.asctime( time.localtime(time.time()) )
+    with open(r"C:\Users\Harumonia\spider_test\med_pic\log_search.txt","a") as timelog:
+        timelog.write(localtime+"|"+url+"|"+name+" over"+"\n")
+        
+        
+if __name__ == '__main__':
+    url='http://p.ayxbk.com/images/thumb/3/3e/Bkbbu.jpg/220px-Bkbbu.jpg'
+    name="玉米须"
+    Download(url,name)
